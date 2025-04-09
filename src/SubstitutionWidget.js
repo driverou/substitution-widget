@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import './SubstitutionWidget.css'; // We'll create this file next
+import { useState, useRef } from 'react';
+import './SubstitutionWidget.css';
 
 const SubstitutionWidget = () => {
   // Sample sections (you would replace this with your actual sections)
@@ -23,6 +23,10 @@ const SubstitutionWidget = () => {
     available: [],
     resolved: false
   });
+
+  const [slackMessage, setSlackMessage] = useState('');
+  const [showMessage, setShowMessage] = useState(false);
+  const messageRef = useRef(null);
 
   const handleTextChange = (e) => {
     setFormData({
@@ -56,11 +60,41 @@ const SubstitutionWidget = () => {
     });
   };
 
+  const generateSlackMessage = () => {
+    const availableSections = formData.available.length > 0 
+      ? formData.available.join(', ')
+      : 'None specified';
+
+    const statusEmoji = formData.resolved ? '✅' : '❌';
+    const statusText = formData.resolved ? 'Resolved' : 'Not Resolved';
+
+    const message = `📅 *OFFICE HOUR SUBSTITUTION REQUEST*
+-------------------------------------
+*Week:* ${formData.week}
+*Section to Substitute:* ${formData.section}
+*Available For:* ${availableSections}
+*Status:* ${statusEmoji} ${statusText}`;
+
+    setSlackMessage(message);
+    setShowMessage(true);
+    
+    // Focus will be set after the component re-renders and the textarea exists
+    setTimeout(() => {
+      if (messageRef.current) {
+        messageRef.current.select();
+      }
+    }, 100);
+  };
+
+  const copyToClipboard = () => {
+    messageRef.current.select();
+    document.execCommand('copy');
+    alert('Copied to clipboard! Now you can paste it in Slack.');
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would handle the submission, perhaps sending to a database or Slack
-    console.log('Submission data:', formData);
-    alert('Substitution request submitted!');
+    generateSlackMessage();
   };
 
   return (
@@ -140,9 +174,27 @@ const SubstitutionWidget = () => {
           type="submit"
           className="submit-button"
         >
-          Submit Request
+          Generate Slack Message
         </button>
       </form>
+
+      {showMessage && (
+        <div className="slack-message-container">
+          <h3>Copy this message to Slack:</h3>
+          <textarea 
+            ref={messageRef}
+            className="slack-message"
+            value={slackMessage}
+            readOnly
+          />
+          <button 
+            className="copy-button"
+            onClick={copyToClipboard}
+          >
+            Copy to Clipboard
+          </button>
+        </div>
+      )}
     </div>
   );
 };
