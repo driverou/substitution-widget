@@ -2,26 +2,23 @@ import { useState, useRef } from 'react';
 import './SubstitutionWidget.css';
 
 const SubstitutionWidget = () => {
-  // Sample sections (you would replace this with your actual sections)
   const allSections = [
-    'Monday 9-10am',
-    'Monday 10-11am',
-    'Monday 2-3pm',
-    'Tuesday 11am-12pm',
-    'Tuesday 1-2pm',
-    'Wednesday 9-10am',
-    'Wednesday 3-4pm',
-    'Thursday 10-11am',
-    'Thursday 2-3pm',
-    'Friday 9-10am',
-    'Friday 1-2pm'
+    'Monday 7-9pm',
+    'Tuesday 1-3pm',
+    'Tuesday 3-5pm',
+    'Tuesday 7-9pm',
+    'Wednesday 4-6pm',
+    'Wednesday 7-9pm',
+    'Thursday 1-3pm',
+    'Thursday 3-5pm',
+    'Thursday 7-9pm',
+    'Friday 3-5pm'
   ];
 
   const [formData, setFormData] = useState({
     week: '',
     section: '',
-    available: [],
-    resolved: false
+    available: []
   });
 
   const [slackMessage, setSlackMessage] = useState('');
@@ -53,32 +50,21 @@ const SubstitutionWidget = () => {
     });
   };
 
-  const handleResolvedChange = () => {
-    setFormData({
-      ...formData,
-      resolved: !formData.resolved
-    });
-  };
-
   const generateSlackMessage = () => {
     const availableSections = formData.available.length > 0 
       ? formData.available.join(', ')
       : 'None specified';
-
-    const statusEmoji = formData.resolved ? '✅' : '❌';
-    const statusText = formData.resolved ? 'Resolved' : 'Not Resolved';
 
     const message = `📅 *OFFICE HOUR SUBSTITUTION REQUEST*
 -------------------------------------
 *Week:* ${formData.week}
 *Section to Substitute:* ${formData.section}
 *Available For:* ${availableSections}
-*Status:* ${statusEmoji} ${statusText}`;
+*Status:* ❌ Not Resolved`;
 
     setSlackMessage(message);
     setShowMessage(true);
     
-    // Focus will be set after the component re-renders and the textarea exists
     setTimeout(() => {
       if (messageRef.current) {
         messageRef.current.select();
@@ -101,7 +87,7 @@ const SubstitutionWidget = () => {
     <div className="widget-container">
       <h2 className="widget-title">Office Hour Substitution Request</h2>
       
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="substitution-form">
         <div className="form-group">
           <label htmlFor="week">
             Week:
@@ -145,28 +131,11 @@ const SubstitutionWidget = () => {
                   checked={formData.available.includes(section)}
                   onChange={() => handleAvailableChange(section)}
                 />
-                <label htmlFor={`available-${section}`}>
+                <label htmlFor={`available-${section}`} className="checkbox-label">
                   {section}
                 </label>
               </div>
             ))}
-          </div>
-        </div>
-        
-        <div className="form-group resolved-group">
-          <label className="resolved-label">
-            <input
-              type="checkbox"
-              checked={formData.resolved}
-              onChange={handleResolvedChange}
-            />
-            Resolved
-          </label>
-          <div className="resolved-indicator">
-            {formData.resolved ? 
-              <span className="resolved-check">✓</span> : 
-              <span className="resolved-x">✗</span>
-            }
           </div>
         </div>
         
